@@ -1,0 +1,32 @@
+[global]
+dll=D:\\OpenHardwareMonitor\\OpenHardwareMonitorLib.dll
+mappings=[
+        {
+            "type": "Temperature",
+            "name": "GPU Core",
+            "key": "gpu_temperature"
+        },
+        {
+            "type": "Load",
+            "name": "CPU Total",
+            "key": "cpu_load"
+        },
+        {
+            "type": "Load",
+            "name": "GPU Core",
+            "key": "gpu_load"
+        },
+        {
+            "type": "Temperature",
+            "name": "CPU Package",
+            "key": "cpu_temperature"
+        }
+    ]
+
+
+[message]
+node_name=pc-node
+encoder=iot_message.cryptor.aes_sha1
+encoder_params=abcdef2345678901,2345678901abcdef,0123456789abcdef,mypassphrase
+ip=192.168.1.255
+port=5053
