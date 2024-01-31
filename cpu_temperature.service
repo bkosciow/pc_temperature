@@ -1,0 +1,14 @@
+[Unit]
+Description=CPUTemperature
+After=multi-user.target
+
+[Service]
+User=kosci
+Type=idle
+ExecStart=python3 /home/kosci/pc_temperature/main_linux.py
+WorkingDirectory=/home/kosci/pc_temperature
+
+
+[Install]
+WantedBy=multi-user.target
+

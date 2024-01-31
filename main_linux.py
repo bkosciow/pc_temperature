@@ -5,6 +5,13 @@ import json
 from iot_message.message import Message
 import socket
 import os
+import psutil
+import getopt
+import sys
+
+# sudo cp cpu_temperature.service /lib/systemd/system/
+# sudo systemctl start cpu_temperature
+# sudo systemctl enable cpu_temperature
 
 
 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -54,10 +61,11 @@ class Config(object):
 
 
 class PythonService:
-    def __init__(self):
+    def __init__(self, cfg_path="./"):
         self.running = True
-        config = Config("./config.ini")
+        config = Config(cfg_path+"config.ini")
         self.address = (config.get("message.ip"), int(config.get("message.port")))
+        self.mapping = config.get_dict("global.linux_mappings")
         self.running = True
         socket.setdefaulttimeout(60)
 
@@ -75,16 +83,26 @@ class PythonService:
 
     def main(self):
         while self.running:
-            with open(r"/sys/class/thermal/thermal_zone0/temp") as File:
-                temp = File.readline()
-                data = {
-                    "cpu_temperature": float(temp)/1000
-                }
+            temp = psutil.sensors_temperatures()
+            data = {
+                "cpu_load": psutil.cpu_percent(),
+            }
+
+            for item in temp[self.mapping["cpu_temperature"]["type"]]:
+                if item.label == self.mapping["cpu_temperature"]["label"]:
+                    data["cpu_temperature"] = item.current
+
             self.send(data)
             time.sleep(3)
 
 
 if __name__ == '__main__':
-    p = PythonService()
+    path = "./"
+    opts, args = getopt.getopt(sys.argv[1:], "c:", ["config="])
+    for opt, arg in opts:
+        if opt == '-c' or opt == "--config":
+            path = arg
+
+    p = PythonService(path)
     p.main()
 
