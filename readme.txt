@@ -22,4 +22,16 @@ python .\main.py start
 
 
 *** LINUX ***
+no gpu temperatures
 
+- pip
+pip install psutil iot_message pycryptodome
+
+- run
+copy config.ini.dist to config.ini
+fill data
+
+- service
+sudo cp cpu_temperature.service /lib/systemd/system/
+sudo systemctl start cpu_temperature
+sudo systemctl enable cpu_temperature

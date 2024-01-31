@@ -72,7 +72,7 @@ class PythonService(win32serviceutil.ServiceFramework):
     def __init__(self, args):
         self.running = True
         config = Config(os.path.dirname(__file__) + "/config.ini")
-        self.mapping = config.get_dict("global.mappings")
+        self.mapping = config.get_dict("global.windows_mappings")
         self.address = (config.get("message.ip"), int(config.get("message.port")))
         self.running = True
         dll = config.get("global.dll")
