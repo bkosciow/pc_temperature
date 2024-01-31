@@ -1,6 +1,8 @@
 - What it is
+
+*** WINDOWS ***
 Reading PC CPU and GPU temperatures on Windows.
-Work as a service.
+Works as a service.
 Require OpenHardwareMonitorLib.dll (https://openhardwaremonitor.org/downloads/)
 
 - pip
@@ -17,3 +19,7 @@ open terminal as an admin,
 go to project dir, type:
 python .\main.py install
 python .\main.py start
+
+
+*** LINUX ***
+
