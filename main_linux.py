@@ -8,6 +8,8 @@ import os
 import psutil
 import getopt
 import sys
+import pprint
+import subprocess
 
 # sudo cp cpu_temperature.service /lib/systemd/system/
 # sudo systemctl start cpu_temperature
@@ -66,7 +68,10 @@ class PythonService:
         config = Config(cfg_path+"config.ini")
         self.address = (config.get("message.ip"), int(config.get("message.port")))
         self.mapping = config.get_dict("global.linux_mappings")
+        self.fast_loop = int(config.get("global.fast_loop"))
+        self.slow_loop = int(config.get("global.slow_loop"))
         self.running = True
+        self.slow_tick = self.slow_loop + 1
         socket.setdefaulttimeout(60)
 
     def send(self, data):
@@ -81,28 +86,63 @@ class PythonService:
         except Exception:
             pass
 
+    def get_hdd_temp(self, hdd):
+        for line in subprocess.Popen(
+                ['smartctl', '-a', str('/dev/' + hdd)],
+                stdout=subprocess.PIPE
+        ).stdout.read().decode('utf8').split('\n'):
+            if ('Temperature_Celsius' in line.split()) or ('Temperature_Internal' in line.split()):
+                return line.split()[9]
+            if 'Temperature:' in line.split():
+                return line.split()[1]
+
+        return None
+
+    def get_readings(self):
+        return psutil.sensors_temperatures()
+
+    def build_message(self):
+        temp = self.get_readings()
+        data = {
+            "cpu_load": psutil.cpu_percent(),
+        }
+
+        for item in self.mapping:
+            if len(item['type']) == 3 and item['type'].startswith("sd"):
+                if self.slow_tick > self.slow_loop:
+                    data[item['key']] = self.get_hdd_temp(item['type'])
+            elif item['type'].startswith("nvme"):
+                if self.slow_tick > self.slow_loop:
+                    data[item['key']] = self.get_hdd_temp(item['type'])
+            else:
+                v = temp[item['type']][0]
+                data[item['key']] = v.current
+
+        if self.slow_tick > self.slow_loop:
+            self.slow_tick = 0
+        self.slow_tick += 1
+
+        return data
+
     def main(self):
         while self.running:
-            temp = psutil.sensors_temperatures()
-            data = {
-                "cpu_load": psutil.cpu_percent(),
-            }
-
-            for item in temp[self.mapping["cpu_temperature"]["type"]]:
-                if item.label == self.mapping["cpu_temperature"]["label"]:
-                    data["cpu_temperature"] = item.current
-
-            self.send(data)
-            time.sleep(3)
+            self.send(self.build_message())
+            time.sleep(self.fast_loop)
 
 
 if __name__ == '__main__':
     path = "./"
-    opts, args = getopt.getopt(sys.argv[1:], "c:", ["config="])
+    debug = False
+    opts, args = getopt.getopt(sys.argv[1:], "c:d", ["config=", "debug"])
     for opt, arg in opts:
+        if opt == '-d' or opt == '--debug':
+            debug = True
         if opt == '-c' or opt == "--config":
             path = arg
 
     p = PythonService(path)
-    p.main()
-
+    if debug:
+        pprint.pprint(p.get_readings())
+        pprint.pprint(p.build_message())
+    else:
+        p.main()

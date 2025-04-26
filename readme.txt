@@ -4,6 +4,7 @@
 Reading PC CPU and GPU temperatures on Windows.
 Works as a service.
 Require OpenHardwareMonitorLib.dll (https://openhardwaremonitor.org/downloads/)
+No HDD temperatures
 
 - pip
 require
@@ -22,7 +23,7 @@ python .\main.py start
 
 
 *** LINUX ***
-no gpu temperatures
+can read some gpu temperatures
 
 - pip
 pip install psutil iot_message pycryptodome
@@ -30,6 +31,9 @@ pip install psutil iot_message pycryptodome
 - run
 copy config.ini.dist to config.ini
 fill data
+
+- debug
+main_linux.py -d
 
 - service
 sudo cp cpu_temperature.service /lib/systemd/system/

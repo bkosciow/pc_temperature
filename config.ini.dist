@@ -23,6 +23,36 @@ mappings=[
         }
     ]
 
+linux_mappings=[
+        {
+            "type": "amdgpu",
+            "name": "GPU Core",
+            "key": "gpu_temperature"
+        },
+        {
+            "type": "k10temp",
+            "name": "CPU Package",
+            "key": "cpu_temperature"
+        },
+        {
+            "type": "nvme0",
+            "name": "nvme",
+            "key": "hdd1_temperature"
+        },
+        {
+            "type": "sda",
+            "name": "Exos 6",
+            "key": "hdd2_temperature"
+        },
+        {
+            "type": "sdb",
+            "name": "WD 10",
+            "key": "hdd3_temperature"
+        }
+    ]
+
+fast_loop=7
+slow_loop=10
 
 [message]
 node_name=pc-node
