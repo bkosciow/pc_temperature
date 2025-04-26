@@ -10,6 +10,7 @@ import getopt
 import sys
 import pprint
 import subprocess
+import logging
 
 # sudo cp cpu_temperature.service /lib/systemd/system/
 # sudo systemctl start cpu_temperature
@@ -73,6 +74,7 @@ class PythonService:
         self.running = True
         self.slow_tick = self.slow_loop + 1
         socket.setdefaulttimeout(60)
+        self.dev_dir = "/dev/"
 
     def send(self, data):
         msg = {
@@ -88,7 +90,7 @@ class PythonService:
 
     def get_hdd_temp(self, hdd):
         for line in subprocess.Popen(
-                ['smartctl', '-a', str('/dev/' + hdd)],
+                ['smartctl', '-a', str(self.dev_dir + hdd)],
                 stdout=subprocess.PIPE
         ).stdout.read().decode('utf8').split('\n'):
             if ('Temperature_Celsius' in line.split()) or ('Temperature_Internal' in line.split()):
@@ -133,14 +135,18 @@ class PythonService:
 if __name__ == '__main__':
     path = "./"
     debug = False
-    opts, args = getopt.getopt(sys.argv[1:], "c:d", ["config=", "debug"])
+    dev = "/dev/"
+    opts, args = getopt.getopt(sys.argv[1:], "hc:d", ["config=", "debug"])
     for opt, arg in opts:
         if opt == '-d' or opt == '--debug':
             debug = True
         if opt == '-c' or opt == "--config":
             path = arg
+        if opt == '-h':
+            drv = "/dev_host/"
 
     p = PythonService(path)
+    p.dev_dir = dev
     if debug:
         pprint.pprint(p.get_readings())
         pprint.pprint(p.build_message())
