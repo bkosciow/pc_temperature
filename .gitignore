@@ -2,3 +2,4 @@
 config.ini
 OpenHardwareMonitorLib*
 .idea
+__pycache__
